@@ -241,6 +241,9 @@ open class RustAndroidPlugin : Plugin<Project> {
             cargoExtension.prebuiltToolchains ?:
             (ndkVersionMajor >= 19);
 
+        println("ndkDirectory: ${extensions[T::class].ndkDirectory}")
+        println("usePrebuilt: ${usePrebuilt} = ${cargoExtension.localProperties.getProperty("rust.prebuiltToolchains")?.equals("true")} ?: ${cargoExtension.prebuiltToolchains} ?: (${ndkVersionMajor} >= 19)")
+
         if (usePrebuilt && ndkVersionMajor < 19) {
             throw GradleException("usePrebuilt = true requires NDK version 19+")
         }

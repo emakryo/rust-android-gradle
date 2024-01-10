@@ -26,6 +26,8 @@ open class GenerateToolchainsTask : DefaultTask() {
         val app = project.extensions[T::class]
         val ndkPath = app.ndkDirectory
 
+        println("ndkPath: ${ndkPath}")
+
         // It's safe to unwrap, since we bailed at configuration time if this is unset.
         val targets = cargoExtension.targets!!
 
