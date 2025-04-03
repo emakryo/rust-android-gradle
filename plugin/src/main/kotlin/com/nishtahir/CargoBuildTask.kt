@@ -8,13 +8,16 @@ import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.*
 import javax.inject.Inject
 
 
+// <<<<<<< HEAD
 open class CargoBuildTask @Inject constructor(
     private val toolchain: Toolchain,
     private val cargoConfig: CargoConfig,
@@ -25,6 +28,13 @@ open class CargoBuildTask @Inject constructor(
     @get:OutputDirectory
     lateinit var destinationDir: File
 
+// =======
+    @get:Input
+    @Optional
+    var ndk: Ndk? = null
+
+    // @Suppress("unused")
+// >>>>>>> upstream/master
     @TaskAction
     fun taskAction() {
         project.plugins.all {
@@ -59,9 +69,41 @@ open class CargoBuildTask @Inject constructor(
             spec.into(destinationDir)
 
             // Need to capture the value to dereference smoothly.
+// <<<<<<< HEAD
             val targetIncludes = cargoConfig.targetIncludes
             if (targetIncludes != null) {
                 spec.include(targetIncludes.asIterable())
+// =======
+//             val toolchain = toolchain
+//             if (toolchain == null) {
+//                 throw GradleException("toolchain cannot be null")
+//             }
+
+//             val ndk = ndk ?: throw GradleException("ndk cannot be null")
+
+//             project.plugins.all {
+//                 when (it) {
+//                     is AppPlugin -> buildProjectForTarget<AppExtension>(project, toolchain, ndk, this)
+//                     is LibraryPlugin -> buildProjectForTarget<LibraryExtension>(project, toolchain, ndk, this)
+//                 }
+//             }
+//             // CARGO_TARGET_DIR can be used to force the use of a global, shared target directory
+//             // across all rust projects on a machine. Use it if it's set, otherwise use the
+//             // configured `targetDirectory` value, and fall back to `${module}/target`.
+//             //
+//             // We also allow this to be specified in `local.properties`, not because this is
+//             // something you should ever need to do currently, but we don't want it to ruin anyone's
+//             // day if it turns out we're wrong about that.
+//             val target =
+//                 getProperty("rust.cargoTargetDir", "CARGO_TARGET_DIR")
+//                 ?: targetDirectory
+//                 ?: "${module!!}/target"
+
+//             val defaultTargetTriple = getDefaultTargetTriple(project, rustcCommand)
+
+//             var cargoOutputDir = File(if (toolchain.target == defaultTargetTriple) {
+//                 "${target}/${profile}"
+// >>>>>>> upstream/master
             } else {
                 // It's safe to unwrap, since we bailed at configuration time if this is unset.
                 val libName = cargoConfig.libname!!
@@ -72,9 +114,15 @@ open class CargoBuildTask @Inject constructor(
         }
     }
 
+// <<<<<<< HEAD
     private fun buildProjectForTarget(project: Project, toolchain: Toolchain, cargoConfig: CargoConfig, ndkDirectory: File) {
         val apiLevel = cargoConfig.apiLevels[toolchain.platform]!!
         val defaultTargetTriple = getDefaultTargetTriple(project, cargoConfig.rustcCommand)
+// =======
+    // inline fun <reified T : BaseExtension> buildProjectForTarget(project: Project, toolchain: Toolchain, ndk: Ndk, cargoExtension: CargoExtension) {
+        // val apiLevel = cargoExtension.apiLevels[toolchain.platform]!!
+        // val defaultTargetTriple = getDefaultTargetTriple(project, cargoExtension.rustcCommand)
+// >>>>>>> upstream/master
 
         project.exec {
             with(it) {
@@ -158,12 +206,17 @@ open class CargoBuildTask @Inject constructor(
 
                 // Cross-compiling to Android requires toolchain massaging.
                 if (toolchain.type != ToolchainType.DESKTOP) {
+// <<<<<<< HEAD
                     val ndkVersion = ndkDirectory.name
                     val ndkVersionMajor = try {
                         ndkVersion.split(".").first().toInt()
                     } catch (ex: NumberFormatException) {
                         0 // Falls back to generic behaviour.
                     }
+// =======
+//                     val ndkPath = ndk.path
+//                     val ndkVersionMajor = ndk.versionMajor
+// >>>>>>> upstream/master
 
                     val toolchainDirectory = if (toolchain.type == ToolchainType.ANDROID_PREBUILT) {
                         environment("CARGO_NDK_MAJOR_VERSION", ndkVersionMajor)
@@ -221,7 +274,15 @@ open class CargoBuildTask @Inject constructor(
                     environment("RUST_ANDROID_GRADLE_LINKER_WRAPPER_PY",
                             File(project.rootProject.buildDir, "linker-wrapper/linker-wrapper.py").path)
                     environment("RUST_ANDROID_GRADLE_CC", cc)
+// <<<<<<< HEAD
                     environment("RUST_ANDROID_GRADLE_CC_LINK_ARG", "-Wl,-soname,lib${cargoConfig.libname!!}.so")
+// =======
+//                     if (cargoExtension.generateBuildId) {
+//                         environment("RUST_ANDROID_GRADLE_CC_LINK_ARG", "-Wl,--build-id,-soname,lib${cargoExtension.libname!!}.so")
+//                     } else {
+//                         environment("RUST_ANDROID_GRADLE_CC_LINK_ARG", "-Wl,-soname,lib${cargoExtension.libname!!}.so")
+//                     }
+// >>>>>>> upstream/master
                 }
 
                 cargoConfig.extraCargoBuildArguments?.let { args ->

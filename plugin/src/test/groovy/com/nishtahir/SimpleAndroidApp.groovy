@@ -314,7 +314,11 @@ class SimpleAndroidApp {
         boolean kaptWorkersEnabled = true
 
         VersionNumber androidVersion = Versions.latestAndroidVersion()
-        VersionNumber ndkVersion = VersionNumber.parse("25.2.9519653")
+// <<<<<<< HEAD
+//         VersionNumber ndkVersion = VersionNumber.parse("25.2.9519653")
+// =======
+        VersionNumber ndkVersion = Versions.latestAndroidVersion() >= android("3.4.0") ? VersionNumber.parse("26.3.11579264") : null
+// >>>>>>> upstream/master
 
         VersionNumber kotlinVersion = VersionNumber.parse("1.3.72")
         File projectDir

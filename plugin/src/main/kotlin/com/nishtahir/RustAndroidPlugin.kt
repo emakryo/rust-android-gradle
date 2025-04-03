@@ -105,6 +105,11 @@ val toolchains = listOf(
                 "x86_64")
 )
 
+data class Ndk(val path: File, val version: String) {
+    val versionMajor: Int
+        get() = version.split(".").first().toInt()
+}
+
 data class Toolchain(val platform: String,
                      val type: ToolchainType,
                      val target: String,
@@ -277,21 +282,29 @@ open class RustAndroidPlugin : Plugin<Project> {
             ?: config.getProperty("rust.cargoTargetDir", "CARGO_TARGET_DIR")
 
         // Determine the NDK version, if present
-        val ndkSourceProperties = Properties()
-        val ndkSourcePropertiesFile = File(extensions[T::class].ndkDirectory, "source.properties")
-        if (ndkSourcePropertiesFile.exists()) {
-            ndkSourceProperties.load(ndkSourcePropertiesFile.inputStream())
+        val ndk = extensions[T::class].ndkDirectory.let {
+            val ndkSourceProperties = Properties()
+            val ndkSourcePropertiesFile = File(it, "source.properties")
+            if (ndkSourcePropertiesFile.exists()) {
+                ndkSourceProperties.load(ndkSourcePropertiesFile.inputStream())
+            }
+            val ndkVersion = ndkSourceProperties.getProperty("Pkg.Revision", "0.0")
+            Ndk(path = it, version = ndkVersion)
         }
-        val ndkVersion = ndkSourceProperties.getProperty("Pkg.Revision", "0.0")
-        val ndkVersionMajor = ndkVersion.split(".").first().toInt()
 
         // Determine whether to use prebuilt or generated toolchains
         val usePrebuilt =
+// <<<<<<< HEAD
             config.localProperties.getProperty("rust.prebuiltToolchains")?.equals("true") ?:
             config.prebuiltToolchains ?:
-            (ndkVersionMajor >= 19)
+            (ndk.versionMajor >= 19)
+// =======
+//             cargoExtension.localProperties.getProperty("rust.prebuiltToolchains")?.equals("true") ?:
+//             cargoExtension.prebuiltToolchains ?:
+//             (ndk.versionMajor >= 19);
+// >>>>>>> upstream/master
 
-        if (usePrebuilt && ndkVersionMajor < 19) {
+        if (usePrebuilt && ndk.versionMajor < 19) {
             throw GradleException("usePrebuilt = true requires NDK version 19+")
         }
 
@@ -366,6 +379,7 @@ open class RustAndroidPlugin : Plugin<Project> {
                 it.outputs.upToDateWhen { false }
             }
 
+// <<<<<<< HEAD
             if (toolchain.type == ToolchainType.DESKTOP) {
                 tasks.named(variantDesktopBuildTask).configure {
                     it.dependsOn(buildTask)
@@ -376,6 +390,14 @@ open class RustAndroidPlugin : Plugin<Project> {
                     it.dependsOn(buildTask)
                     it.inputs.dir(destinationDir)
                 }
+// =======
+//             val targetBuildTask = tasks.maybeCreate("cargoBuild${target.capitalize()}",
+//                     CargoBuildTask::class.java).apply {
+//                 group = RUST_TASK_GROUP
+//                 description = "Build library ($target)"
+//                 toolchain = theToolchain
+//                 this.ndk = ndk
+// >>>>>>> upstream/master
             }
         }
     }

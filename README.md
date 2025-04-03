@@ -35,7 +35,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'io.github.emakryo.rust-android-gradle:plugin:0.1.0'
+        classpath 'io.github.emakryo.rust-android-gradle:plugin:0.2.1'
     }
 }
 ```
@@ -373,6 +373,10 @@ cargo {
     extraCargoBuildArguments = ['a', 'list', 'of', 'strings']
 }
 ```
+
+### generateBuildId
+
+Generate a build-id for the shared library during the link phase.
 
 ### exec
 

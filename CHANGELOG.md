@@ -12,6 +12,10 @@ see [CHANGELOG.md of the original project](https://github.com/mozilla/rust-andro
 
 ## [Unreleased]
 
+- Added option to add a build-id during linking
+- Do not use deprecated  module for Python 3.13 compatibility
+- Always use the NDK version from .
+
 ## [0.2.1] - 2024-02-19
 
 ### Fixed
